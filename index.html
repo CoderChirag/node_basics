@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chat Application | Long Polling</title>
+	<style>
+	*,
+	*::after,
+	*::before {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	
+	body {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-family: sans-serif;
+	}
+	
+	#app {
+		width: 80%;
+		height: 85vh;
+		margin-top: 4vh;
+		padding: 25px 0;
+		border: 2px solid #000;
+		border-radius: 10px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: center;
+	}
+	
+	#welcome_text {
+		font-size: 1.2rem;
+		font-weight: 600;
+	}
+	
+	#frame {
+		width: 70%;
+		height: 75%;
+		border: 2px solid #aaa;
+		border-radius: 10px;
+		overflow: auto;
+		padding: 25px 15px;
+	}
+	
+	#message_bar {
+		width: 70%;
+		padding: 0 15px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	
+	#message_box {
+		width: 82%;
+		height: 40px;
+		padding: 0 10px;
+		border: 3px solid orange;
+		border-radius: 5px;
+		font-size: 1.1rem;
+	}
+	
+	#send_btn {
+		width: 10%;
+		height: 40px;
+		border: 3px solid red;
+		background-color: orange;
+		color: #fff;
+		border-radius: 5px;
+		font-size: 1.4rem;
+		cursor: pointer;
+	}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<p id="welcome_text">Welcome</p>
+		<div id="frame"></div>
+		<div id="message_bar">
+			<input type="text" id="message_box" placeholder="Enter message">
+			<button id="send_btn">Send</button>
+		</div>
+	</div>
+</body>
+
+</html>
