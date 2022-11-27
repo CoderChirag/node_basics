@@ -49,6 +49,33 @@
 		padding: 25px 15px;
 	}
 	
+	#frame p {
+		margin-bottom: 10px;
+	}
+	
+	#frame #time {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #aaa;
+		text-align: center;
+	}
+	
+	#frame #username {
+		/* font-size: 0.8rem; */
+		font-weight: 600;
+		color: #fff;
+		text-align: center;
+		background-color: rgba(2, 61, 255, 0.784);
+		padding: 2.5px 5px;
+		border-radius: 5px;
+	}
+	
+	#frame #message {
+		color: rgba(0, 0, 0, 0.5);
+		font-family: monospace;
+		font-size: 1.1rem;
+	}
+	
 	#message_bar {
 		width: 70%;
 		padding: 0 15px;
@@ -82,12 +109,56 @@
 <body>
 	<div id="app">
 		<p id="welcome_text">Welcome</p>
-		<div id="frame"></div>
+		<div id="frame">
+		</div>
 		<div id="message_bar">
 			<input type="text" id="message_box" placeholder="Enter message">
-			<button id="send_btn">Send</button>
+			<button id="send_btn" onclick="sendMsg()">Send</button>
 		</div>
 	</div>
+	
+	<script>
+	let username = prompt( "Enter your name" );
+	if ( !username ) username = 'Anonymous';
+	console.log( username );
+	let counter = 0;
+	const poll = ( ) => {
+		fetch( `http://localhost:3000/poll/${counter}` )
+			.then( res => res.json( ) )
+			.then( data => {
+				if ( data.count > counter ) {
+					counter = data.count;
+					const frame = document.querySelector( '#frame' );
+					data.messages.map( ( msg, index ) => {
+						console.log( msg );
+						const p = document.createElement( 'p' );
+						p.innerHTML = `
+                        <span id="time">${new Date(msg.date).getHours()}:${new Date(msg.date).getMinutes()}</span>
+                        <span id="username">${msg.username}</span>
+                        <span id="message">${msg.msg}</span>
+                        `;
+						frame.appendChild( p );
+					} )
+				}
+				console.log( counter )
+				poll( );
+			} )
+			.catch( err => console.log( err ) );
+	};
+	poll( );
+	
+	const sendMsg = ( ) => {
+		const msg = document.querySelector( '#message_box' )
+			.value;
+		console.log( msg );
+		fetch( `http://localhost:3000/msg/${username}/${msg}` )
+			.then( data => {
+				msg.value = '';
+				console.log( data )
+			} )
+			.catch( err => console.log( err ) );
+	}
+	</script>
 </body>
 
 </html>

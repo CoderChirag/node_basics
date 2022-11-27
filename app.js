@@ -36,17 +36,18 @@ const server = http.createServer((req, res) => {
 		const username = url_parts.pathname.split('/')[2];
 		console.log(username);
 		const msg = unescape(url_parts.pathname.split('/')[3]);
-		messages.push({
+		const msgData = {
 			date: new Date(),
 			username: username,
 			msg: msg,
-		});
+		};
+		messages.push(msgData);
 		console.log(messages);
 		clients.forEach(client => {
 			client.end(
 				JSON.stringify({
 					count: messages.length,
-					append: msg + '\n',
+					messages: [msgData],
 				})
 			);
 		});
