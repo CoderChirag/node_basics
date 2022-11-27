@@ -18,6 +18,20 @@ const server = http.createServer((req, res) => {
 				res.end('Server error');
 			}
 		});
+	} else if (url_parts.pathname.substr(0, 5) === '/poll') {
+		const count = url_parts.pathname.replace(/\D/g, ''); // \D ~ [^0-9]
+		console.log(count);
+		console.log(messages);
+		if (messages.length > count) {
+			res.end(
+				JSON.stringify({
+					count: messages.length,
+					messages: messages.slice(count),
+				})
+			);
+		} else {
+			clients.push(res);
+		}
 	}
 });
 
