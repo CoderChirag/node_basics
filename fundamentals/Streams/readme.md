@@ -20,3 +20,16 @@
 -   That is, reading is performed and then the full set of data is returned either in synchronous or asynchronous fashion.
 -   We have to wait until all the data is read, and internally Node will need to allocate enough memory to store all the data in the memory.
 -   Can be problematic therefore.
+
+## Partially buffered access
+
+[100 mb file]
+
+1. [allocate small buffer]
+2. [read and return small buffer]
+3. [repeat 1&2 until done]
+
+-   Does not treat data input as a discrete event, but rather as a series of events which occur as the data is being read or written.
+-   Allows us to access data as it is being processed.
+-   Partially buffered methods, such as `readSync()` and `read()` allow us to specify the size of the buffer, and read data in small chunks.
+-   They allow for more control (eg, reading a file in non-linear order by skipping back and forth in the file).
