@@ -10,3 +10,5 @@
     -   `emitter.removeListener(eventName, listener)`
     -   `emitter.off(eventName, listener)`
     -   `emitter.removeAllListeners([eventName])`
+
+A code example can be found in [event_emitters.js](./event_emitters.js)
