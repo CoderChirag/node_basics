@@ -150,3 +150,61 @@
           slashes: true
       }
     ```
+
+##### Parsing `POST` requests
+
+-   Post requests transmit thier data as the body of the request.
+-   To access the data, you can buffer the data to a string in order to parse it.
+-   The data is accessible through the `'data'` events emitted by the request. When all the data has been recieved, the `'end'` event is emitted:
+    ```
+    function parsePost(req, callback){
+        var data = '';
+        req.on('data', function(chunk){
+            data += chunk;
+        });
+        req.on('end', function(){
+            callback(data);
+        });
+    }
+    ```
+-   POST requests can be in multiple different encodings. The 2 most common encodings are:
+    -   `application/x-www-form-urlencoded`
+    -   `multipart/form-data`
+
+###### `application/x-www-form-urlencoded`
+
+-   `name=John+Doe&gender=male&family=5&city=kent&city=miami&other=abc%0D%0Adef&nickname`
+-   Encoded like a `GET` request. It's the default encoding used for forms and used for most textual data.
+-   The **QueryString module** provides 2 functions:
+    -   `queryString.parse(str, sep='&amp', eq='=')` - Parses a `GET` query string and returns an object that contains the parameters as properties with values.
+    -   `queryString.stringify(obj, sep='&amp', eq='=')` - Does the verse of `queryString.parse()`: takes an object with the properties and values and returns a string.
+        ```
+        var qs = require('querystring');
+        var data = '';
+        req.on('data', function(chunk){
+            data += chunk;
+        });
+        req.on('end', function(){
+            var post = qs.parse(data);
+            console.log(post);
+        })
+        ```
+
+###### `multipart/form-data`
+
+-   ```
+    Content-Type: multipart/form-data; boundary=AaB03x
+
+    --AaB03x
+    Content-Disposition: form-data; name="submit-name"
+
+    Larry
+    --AaB03x
+    Content-Disposition: form-data; name="files"; filename="file1.txt"
+    Content-Type: text/plain
+
+    ... contents of the file1.txt ...
+    --AaB03x--
+    ```
+
+-   `multipart/form-data` is used for **binary files**. This encoding is somewhat complicated to decode.
