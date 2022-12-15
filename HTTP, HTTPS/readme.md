@@ -77,3 +77,39 @@
         // do something with the request
     });
     ```
+
+### The Server Request Object - `http.ServerRequest`
+
+-   ServerRequest are **Readable Streams**, so we can bind to the `'data'` and `'end'` events to access the request data.
+-   The Request object contains 3 intersting properties:
+    -   `request.method` - The request method as a string. **Read Only.** Example: `'GET'`, `'POST'` etc.
+    -   `request.url` - Request URL string. Example: `'/'`, `'/user/1'`, `'/post/new/?param=value'`
+    -   `request.headers` - A **read only** object, indexed by the name of the header (converted to lowecase), containing the values of the headers.
+-   Example `http.ServerRequest` object:
+    ```
+    {
+        socket: {...},
+        connection: {...},
+        httpVersion: '1.1',
+        complete: false,
+        headers: {
+            host: 'localhost:8080',
+            connection: 'keep-alive',
+            'cache-control': 'max-age=0',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) ...',
+            accept: 'application/xml, application/xhtml+xml ...',
+            'accept-encoding': 'gzip,deflate,sdch',
+            'accept-language': 'en-US,en;q=0.8',
+            'accept-charset': 'ISO-8859-1,utf-8,q=0.7,;q=0.3'
+        },
+        trailers: {...},
+        readable: true,
+        url: '/',
+        method: 'GET',
+        statusCode: null,
+        client: {...},
+        httpVersionMajor: 1,
+        httpVersionMinor: 1,
+        upgrade: false
+    }
+    ```
