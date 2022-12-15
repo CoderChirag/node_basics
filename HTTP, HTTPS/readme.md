@@ -113,3 +113,40 @@
         upgrade: false
     }
     ```
+
+#### Parsing Data
+
+-   There are several different formats through which an HTTP server can recieve requests.
+-   The most commonly used formats are:
+    -   `HTTP GET` - passed via `request.url`
+    -   `HTTP POST` requests - passed as `'data'` events
+    -   `cookies` - passed via `request.headers.cookies`
+
+##### Parsing `GET` requests
+
+-   The `request.url` parameter contains the URL for the current request.
+-   The **URL module** provides 3 functions which can be used to work with URLs:
+    -   `url.parse(urlStr, parseQueryString=false`)` - Parses a URL string and returns an object which contains the various parts of the URL.
+    -   `url.format(urlObj)`: Accepts a parsed URL object ans returns the string. Basically, does the reverse of `url.parse()`.
+    -   `url.resolve(from, to)`: Resolves a given URL relative to base URL as a browser would for an anchor tag.
+-   ```
+      var url = require('url');
+      console.log(url.parse('http://user:pass@host.com:8080/p/a/t/h?query=string#hash', true)); // By passing true as 2nd parameter, you get an additional "query" key that contains the parsed query string.
+
+      // Returns the following object:
+      {
+          href: 'http://user:pass@host.com:8080/p/a/t/h?query=string#hash',
+          protocol: 'http:',
+          host: 'userLpass@host.com:8080',
+          auth: 'user:pass',
+          hostname: 'host.com',
+          port: '8080',
+          pathname: '/p/a/t/h',
+          search: '?query=string',
+          query: {
+              query: 'string'
+          },
+          hash: '#hash',
+          slashes: true
+      }
+    ```
