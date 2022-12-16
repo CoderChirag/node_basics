@@ -57,7 +57,7 @@
 
 -   `statusCode`
 
-### Creating HTTP Server
+### HTTP Server
 
 -   Creating an HTTP server is simple: after requiring the http module, you call `createServer()`, then instruct the server to listen on a particular port:
     ```
@@ -291,3 +291,51 @@
     res.setHeader('Location', '/index.html');
     res.end();
     ```
+
+### HTTP Client
+
+-   There is also a HTTP Client API, which allows you to make HTTP requests and read content from other websites.
+
+#### Methods
+
+-   `http.request(options, callback)`
+-   `http.get(options, callback)`
+
+#### Client Request - Writable Stream
+
+##### Methods
+
+-   `write(chunk, encoding='utf8')`
+-   `end([data[, encoding]])`
+-   `abort()`
+-   `setTimeout(timeout[, callback])`
+-   `setNoDelay(noDelay=true)`
+-   `setSocketKeepAlive(enable=false[, initialDelay])`
+
+##### Events
+
+-   `'response'`
+-   `'socket'`
+-   `'upgrade'`
+-   `'continue'`
+
+#### Client Response - Readable Stream
+
+##### Methods
+
+-   `setEncoding(encoding=null)`
+-   `pause()`
+-   `resume()`
+
+##### Events
+
+-   `'data'`
+-   `'end'`
+-   `'close'`
+
+##### Properties
+
+-   `statusCode`
+-   `httpVersion`
+-   `headers`
+-   `trailers`
