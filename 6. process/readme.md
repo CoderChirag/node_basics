@@ -1,5 +1,16 @@
 # Process
 
+## Contents
+
+- [Process](#process)
+  - [Contents](#contents)
+  - [Process Events](#process-events)
+    - [Event `'exit'`](#event-exit)
+    - [Event `'uncaughtException'`](#event-uncaughtexception)
+  - [Process Streams](#process-streams)
+  - [Process Properties](#process-properties)
+  - [Process Methods](#process-methods)
+
 The global `process` object provides information about, and control over, the current Node.js process.
 
 ```
@@ -68,7 +79,7 @@ exports.log = function(){
 
 The streams are covered in detailed in [Streams](<../1.%20fundamentals%20(Timers%2C%20Streams%2C%20Buffers%20%26%20Event%20Emitters)/1.3%20streams/readme.md>)
 
-### Process Properties
+## Process Properties
 
 The `process` object additionally contains a variety of properties that allow you to access information about the running process. Let's run through a few quick examples with the help of the REPL:
 
@@ -94,7 +105,7 @@ The `process` module also exposes `process.argv`, an array containing the comman
 
 `process.env` contains your environment variables.
 
-### Process Methods
+## Process Methods
 
 There are also a variety of methods attached to the `process` object, many of which deal with quite advanced aspects of a program. We'll take a look at a few of the more commonly useful ones.
 <br>
