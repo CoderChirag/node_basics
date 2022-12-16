@@ -35,7 +35,7 @@ Your code should do what it needs to do, then quickly hand control back over to 
 
 ## Backwardisms in Node.js
 
-A backwardism is a concept that’s so bizarre that at first it seems completely backward.n You’ve probably experienced many backwardisms while learning to program, whether you noticed them or not.
+A backwardism is a concept that’s so bizarre that at first it seems completely backward. You’ve probably experienced many backwardisms while learning to program, whether you noticed them or not.
 <br>
 
 Take the concept of a variable. In algebra it’s common to see equations like 7x + 3 = 24. Here, x is called a variable; it has exactly one value, and your job is to solve the equation to figure out what that value is.
