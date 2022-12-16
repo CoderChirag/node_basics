@@ -372,3 +372,58 @@
       console.log("Got error: " + e.message);
     })
     ```
+
+#### Issuing POST, DELETE, and other methods
+
+-   `http.request(options, callback)` is used.
+-   To issue POST, DELETE or other requests, you need to set the 'method' in options explicitly:
+    ```
+    var opts = {
+        host: 'www.google.com',
+        port: 80,
+        method: 'POST',
+        path: '/',
+        headers: {}
+    }
+    ```
+-   To send the data along with the request, call `req.write()` with the data you want to send before calling `req.end()`.
+-   To ensure that the recieving server can decode the POST data, you should also set the 'content-type'.
+
+##### For `application/x-www-form-urlencoded`
+
+-   ```
+    // POST encoding
+    opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    req.data = qs.stringify(req.data);
+    opts.headers['Content-Length'] = req.data.length;
+    ```
+
+##### For `application/json`
+
+-   ```
+    // JSON encoding
+    opts.headers['Content-Type'] = 'application/json';
+    req.data = JSON.stringify(req.data);
+    opts.headers['Content-Length'] = req.data.length;
+    ```
+-   Making a request is very similar to making a GET request:
+    ```
+    var req = http.request(opts, function(response){
+        var res_data = '';
+        response.on('data', function(chunk){
+            res_data += chunk;
+        });
+        response.on('end', function(){
+            console.log(res_data);
+        });
+    });
+    req.on('error', function(e){
+        console.log("Got error: " + e.message);
+    });
+    // write the data
+    if(opts.method != 'GET'){
+        req.write(req.data);
+    }
+    req.end();
+    ```
+    **Note :** As `http.ClientRequest` supports sending a request body, so if you does not call `req.end()`, the request remains **"pending"** and will most likely not to return any data before you end it explicitly.
