@@ -14,8 +14,8 @@ Asynchronous functions return the value as a parameter to a callback given to th
 ```
 var fs = require('fs');
 fs.readFile('./index.html', 'utf8', function(err, data) {
-// the data is passed to the callback in the second argument
-console.log(data);
+    // the data is passed to the callback in the second argument
+    console.log(data);
 });
 ```
 
@@ -33,3 +33,73 @@ The table below lists all the asynchronous functions in the FS API. These functi
 | **Files: symlinks** | `fs.link(srcpath, dstpath[, callback])`<br>`fs.symlink(linkdata, path[, callback])`<br>`fs.readlink(path[, callback])`<br>`fs.unlink(path[, callback])`
 
 You should use the asynchronous version in most cases, but in rare cases (e.g. reading configuration files when starting a server) the synchronous version is more appropriate.
+
+## Files: reading and writing
+
+Fully buffered reads and writes are fairly straightforward: call the function and pass in a String or a Buffer to write, and then check the return value.
+
+### Reading a file (fully buffered)
+
+```
+fs.readFile('./index.html', 'utf8', function(err, data) {
+    // the data is passed to the callback in the second argument
+    console.log(data);
+});
+```
+
+### Writing a file (fully buffered)
+
+```
+fs.writeFile('./results.txt', 'Hello World', function(err) {
+    if(err) throw err;
+    console.log('File write completed');
+});
+```
+
+When we want to work with files in smaller parts, we need to `open()`, get a file descriptor and then work with that file descriptor.
+`fs.open(path, flags[, mode[, callback]])` supports the following flags:
+
+-   `'r'` - Open file for reading. An exception occurs if the file does not exist.
+-   `'r+'` - Open file for reading and writing. An exception occurs if the file does not exist.
+-   `'w'` - Open file for writing. The file is created (if it does not exist) or truncated (if it exists).
+-   `'w+'` - Open file for reading and writing. The file is created (if it does not exist) or truncated (if it exists).
+-   `'a'` - Open file for appending. The file is created if it does not exist.
+-   `'a+'` - Open file for reading and appending. The file is created if it does not exist.
+
+`mode` refers to the permissions to use in case a new file is created. The default is `0666`.
+
+### Opening, writing to a file and closing it (in parts)
+
+```
+fs.open('./data/index.html', 'w', function(err, fd){
+    if(err) throw err;
+    var buf = new Buffer('bbbbbb\n');
+    fs.write(fd, buf, 0, buf.length, null, function(err, written, buffer){
+        if(err) throw err;
+        console.log(err, written, buffer);
+        fs.close(fd, function(){
+            console.log('Done');
+        });
+    });
+});
+```
+
+The `read()` and `write()` functions operate on Buffers, so in the example above we create a new `Buffer()` from a string.
+Note that built-in readable streams (e.g. HTTP, Net) generally
+return Buffers.
+
+### Opening, seeking to a position, reading from a file and closing it (in parts)
+
+```
+fs.open('./data/index.html', 'r', function(err, fd){
+    if(err) throw err;
+    var buf = new Buffer(3);
+    fs.read(fd, buf, 0, buf.length, null, function(err, bytesRead, buffer){
+        if(err) throw err;
+        console.log(err, bytesRead, buffer);
+        fs.close(fd, function(){
+            console.log('Done');
+        });
+    });
+});
+```
