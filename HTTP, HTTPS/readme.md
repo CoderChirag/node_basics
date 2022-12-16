@@ -208,3 +208,33 @@
     ```
 
 -   `multipart/form-data` is used for **binary files**. This encoding is somewhat complicated to decode.
+
+### The Server Response object - `http.ServerResponse`
+
+-   The 2nd parameter of the request handler callback is a ServerResponse object.
+-   ServerResponses are **Writable Streams**, so we `write()` data and call `end()` to finish the response.
+
+#### Writing response data
+
+-   The code below shows how you can write back data from the server.
+
+    ```
+    var http = require('http');
+    var url = require('url');
+
+    var server = http.createServer().listen(8080, 'localhost');
+    server.on('request', function(req, res){
+        var url_parts = url.parse(req.url, true);
+        switch(url_parts.pathname){
+            case '/':
+            case '/index.html':
+                res.write('<html><body>Hello!</body></html>');
+                break;
+            default:
+                res.write('Unknown path: ' + JSON.stringify(url_parts));
+        }
+        res.end();
+    });
+    ```
+
+    **Note :** `response.end()` must be called on each response to finish the response and close the connection.
