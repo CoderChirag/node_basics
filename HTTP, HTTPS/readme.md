@@ -238,3 +238,56 @@
     ```
 
     **Note :** `response.end()` must be called on each response to finish the response and close the connection.
+
+#### Common response headers
+
+-   Some common uses for **HTTP headers** include:
+    -   Specifying the content type (**content-type**)
+    -   Redirecting requests (**location**)
+    -   Specifying the filename and size of a download (**content-disposition, content-length**)
+    -   Setting cookies (**set-cookie**)
+    -   Specifying compression (**content-encoding**)
+    -   Controlling caching (**cache-control, expires, etag**)
+
+##### Headers and `write()`
+
+-   HTTP headers have to be sent before the request data is sent.
+-   Headers can be written in 2 ways:
+    -   **Explicitly** using `response.writeHead(statusCode[, reasonPhrase[, headers]])`. In this case, you have to specify all the headers in one go, along with the HTTP status code and an optional human-readable reasonPhrase.
+    -   **Implicitly :** the first time `response.write()` is called, the current;y set implicit headers are sent. Methods for setting headers implicitly includes `response.statusCode = 200`, `response.setHeader(name, value)`, `response.getHeader(name)`, `response.removeHeader(name)`.
+
+##### Setting the content/type header
+
+-   Browsers expect to receive a content-type header for all the content.
+-   This header contains the **MIME type** for the content/file that is sent, which is used to determine what the browser should do with the data (e.g. display it as an image).
+-   Usually, the mime type is determined by the server based on the file extension:
+    ```
+    var map = {
+        '.ico': 'image/x-icon',
+        '.html': 'text/html',
+        '.js': 'text/javascript',
+        '.json': 'application/json',
+        '.css': 'text/css',
+        '.png': 'image/png'
+    };
+    var ext = '.css';
+    if(map[ext]){
+        console.log('Content-type', map[ext]);
+    }
+    ```
+-   To set the content-type header from a filename:
+    ```
+    var ext = require('path').extname(filename);
+    if(map[ext]){
+        res.setHeader('Content-type', map[ext]);
+    }
+    ```
+
+##### Redirecting to a different URL
+
+-   Redirects are performed using the `Location` header. For example, to redirect to `/index.html`:
+    ```
+    res.statusCode = 302;
+    res.setHeader('Location', '/index.html');
+    res.end();
+    ```
