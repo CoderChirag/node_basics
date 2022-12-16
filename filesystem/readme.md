@@ -178,3 +178,7 @@ fs.mkdir('./newdir', 0666, function(err){
     });
 });
 ```
+
+## Using Readable and Writable streams
+
+Already covered in [streams](<../fundamentals%20(Timers%2C%20Streams%2C%20Buffers%20%26%20Event%20Emitters)/streams/readme.md>)
