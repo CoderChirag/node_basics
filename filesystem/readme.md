@@ -103,3 +103,78 @@ fs.open('./data/index.html', 'r', function(err, fd){
     });
 });
 ```
+
+## Directories: read, create & delete
+
+### Reading a directory
+
+Reading a directory returns the names of the items (files, directories and others) in it.
+
+```
+var path = './data/';
+fs.readdir(path, function(err, files){
+    if(err) throw err;
+    files.forEach(function(file){
+        console.log(path+file);
+        fs.stat(path+file, function(err, stats){
+            console.log(stats);
+        });
+    });
+});
+```
+
+`fs.stat()` gives us more information about each item. The object returned from `fs.stat` looks like this:
+
+```
+{
+    dev: 2114,
+    ino: 48064969,
+    mode: 33188,
+    nlink: 1,
+    uid: 85,
+    gid: 100,
+    rdev: 0,
+    size: 527,
+    blksize: 4096,
+    blocks: 8,
+    atime: Mon, 10 Oct 2011 23:24:11 GMT,
+    mtime: Mon, 10 Oct 2011 23:24:11 GMT,
+    ctime: Mon, 10 Oct 2011 23:24:11 GMT
+}
+```
+
+`atime`, `mtime` and `ctime` are Date instances.
+The stat object also has the following functions:
+
+-   `stats.isFile()`
+-   `stats.isDirectory()`
+-   `stats.isBlockDevice()`
+-   `stats.isCharacterDevice()`
+-   `stats.isSymbolicLink() (only valid with fs.lstat())`
+-   `stats.isFIFO()`
+-   `stats.isSocket()`
+
+The Path module has a set of additional functions for working with paths, such as:
+| | |
+| -- | --
+| `path.normalize(p)` | Normalize a string path, taking care of '..' and '.' parts.
+| `path.join([path1[, path2[, ...]]])` | Join all arguments together and normalize the resulting path.
+| `path.resolve([from...], to)` | Resolves to to an absolute path. If `to` isn't already absolute `from` arguments are prepended in right to left order, until an absolute path is found. If after using all `from` paths still no absolute path is found, the current working directory is used as well. The resulting path is normalized, and trailing slashes are removed unless the path gets resolved to the root directory.
+| `fs.realpath(path[, callback])`<br>`fs.realpathSync(path)` | Resolves both absolute (`‘/path/file’`) and relative paths (`‘../../file’`) and returns the absolute path to the file.
+| `path.dirname(p)` | Return the directory name of a path. Similar to the Unix `dirname` command.
+| `path.basename(p[, ext])` | Return the last portion of a path. Similar to the Unix `basename` command.
+| `path.extname(p)` | Return the extension of the path. Everything after the last `'.'` in the last portion of the path. If there is no `'.'` in the last portion of the path or the only `'.'` is the first character, then it returns an empty string.
+| `path.exists(p[, callback])`<br>`path.existsSync(p)` | Test whether or not the given path exists. Then, call the callback argument with either true or false.
+
+### Creating and deleting a directory
+
+```
+fs.mkdir('./newdir', 0666, function(err){
+    if(err) thorw err;
+    console.log('Created newdir');
+    fs.rmdir('./newdir', function(err){
+        if(err) throw err;
+        console.log('Removed newdir');
+    });
+});
+```
