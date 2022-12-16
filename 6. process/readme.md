@@ -93,3 +93,43 @@ The `process` module also exposes `process.argv`, an array containing the comman
 <br>
 
 `process.env` contains your environment variables.
+
+### Process Methods
+
+There are also a variety of methods attached to the `process` object, many of which deal with quite advanced aspects of a program. We'll take a look at a few of the more commonly useful ones.
+<br>
+
+`process.exit([code])` exits the process. If you call an asynchronous function and then call `process.exit()` immediately afterwards, you will be in a race condition - the asynchronous call may or may not complete before the process is exited. `process.exit()` accepts one optional argument - an integer exit code. `0`, by convention, is an exit with no errors.
+<br>
+
+`process.cwd()` returns the 'current working directory' of the process - this is often the directory from which the command to start the process was issued.
+<br>
+
+`process.chdir()` is used to change the current working directory. For example:
+
+```
+> process.cwd()
+'C:\\Program Files\\nodejs'
+> process.chdir('D:\\abc')
+> process.cwd()
+'D:\\abc'
+```
+
+Finally, on a more advanced note, we have `process.nextTick(callback)`. This method accepts one argument - a callback - and places it at the top of the next iteration of the event loop. Some people do something like this:
+
+```
+setTimeout(() => {// code here}, 0);
+```
+
+This, however, is not ideal. In Node.js, this should be used instead:
+
+```
+process.nextTick(() => {
+ // code here
+});
+```
+
+It is much more efficient, and much more accurate.
+<br>
+
+`process.nextTick()` is covered in detailed manner in [Timers](<../1.%20fundamentals%20(Timers,%20Streams,%20Buffers%20&%20Event%20Emitters)/1.1%20timers/readme.md>)
