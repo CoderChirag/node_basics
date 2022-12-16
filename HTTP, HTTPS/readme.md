@@ -427,3 +427,9 @@
     req.end();
     ```
     **Note :** As `http.ClientRequest` supports sending a request body, so if you does not call `req.end()`, the request remains **"pending"** and will most likely not to return any data before you end it explicitly.
+
+### Writing a simple HTTP Proxy
+
+-   Since the HTTP server and client expose Readable/Writeable streams, we can write a simple HTTP proxy simply by **pipe()ing** the two together.
+-   The **ServerRequest** is **Readable**, while the **ClientRequest** is **Writable**. Similarly, the **ClientResponse** is **Readable** while the **ServerResponse** is **Writable**.
+-   The example code is given in [http_proxy.js](./http_proxy.js).
