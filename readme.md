@@ -32,3 +32,22 @@ techniques. Rather than waiting line-by-line for an operation to finish, you cre
 <br>
 
 Your code should do what it needs to do, then quickly hand control back over to the event loop so Node.js can work on something else.
+
+## Backwardisms in Node.js
+
+A backwardism is a concept that’s so bizarre that at first it seems completely backward.n You’ve probably experienced many backwardisms while learning to program, whether you noticed them or not.
+<br>
+
+Take the concept of a variable. In algebra it’s common to see equations like 7x + 3 = 24. Here, x is called a variable; it has exactly one value, and your job is to solve the equation to figure out what that value is.
+<br>
+
+Then when you start learning how to program, you quickly run into statements like x = x + 7. Now x is still called a variable, but it can have any value that you assign to it. It can even have different values at different times!
+<br>
+
+From algebra’s perspective, this is a backwardism. The equation x = x + 7 makes no sense at all. The notion of a variable in programming is not just a little different than in algebra—it’s 100 percent backward. But once you understand the concept of assignment, the programming variable makes perfect sense.
+<br>
+
+So it is with Node.js’s single-threaded event loop. From a multithreaded perspective, running just one piece of code at a time seems silly. But once you understand event-driven programming—with nonblocking APIs—it becomes clear.
+<br>
+
+Programming is chock-full of backwardisms like these, and Node.js is no exception. Starting out, you’ll frequently run into code that looks like it should work one way, but it actually does something quite different.
