@@ -339,3 +339,36 @@
 -   `httpVersion`
 -   `headers`
 -   `trailers`
+
+#### Issuing a simple GET request
+
+-   `http.get(option, callback)` is used.
+-   `http.get()` returns a `http.ClientRequest` object, which is a **Writable Stream**.
+-   The callback passed to `http.get()` will recieve a `http.ClientResponse` object when the request is made, which is a **Readable Stream**.
+-   To send a simple GET request, you can use `http.get()`. You need to set the following options:
+    -   `host` - The domain or IP address of the server.
+    -   `port` - The port (e.g. 80).
+    -   `path` - The request path, including the query string.
+-   ```
+    var http = require('http');
+    var qs = require('querystring');
+
+    var options = {
+      host: 'www.google.com',
+      port: 80,
+      path: '/' + '?' + qs.stringify({q: 'hello world'})
+    };
+    var req = http.get(options, function(response){
+      // handle the response
+      var res_data = '';
+      response.on('data', function(chunk){
+          res_data += chunk;
+      });
+      response.on('end', function(){
+          console.log(res_data);
+      });
+    });
+    req.on('error', function(e){
+      console.log("Got error: " + e.message);
+    })
+    ```
