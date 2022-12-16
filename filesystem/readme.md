@@ -182,3 +182,153 @@ fs.mkdir('./newdir', 0666, function(err){
 ## Using Readable and Writable streams
 
 Already covered in [streams](<../fundamentals%20(Timers%2C%20Streams%2C%20Buffers%20%26%20Event%20Emitters)/streams/readme.md>)
+
+## Practical Example
+
+Since Node makes it very easy to launch multiple asynchronous file accesses, you have to be careful when performing large amounts of I/O operations: you might exhaust the available number of file handles (a limited operating system resource used to access files). Furthermore, since the results are returned in an asynchronous manner which does
+not guarantee completion order, you will most likely want to coordinate the order of execution using the [control flow patterns](../control%20flow%20patterns/readme.md) discussed in previous section. Let’s look at
+an example.
+
+### Example: searching for a file in a directory, traversing recursively
+
+In this example, we will search for a file recursively starting from a given path.
+The function takes 3 arguments:
+
+-   a path to search,
+-   the name of the file we are looking for,
+-   and a callback which is called when the file is found.
+
+#### Naive Recursive Version
+
+Here is the naive version: a bunch of nested callbacks, no thought needed:
+
+```
+var fs = require('fs');
+function findFile(path, searchFile, callback){
+    fs.readdir(path, function(err, files){
+        files.forEach(function(file){
+            fs.stat(path+'/'+file, function(){
+                if(err) return callback(err);
+                if(stats.isFile() && file == searchFile){
+                    callback(undefined, path+'/'+file);
+                }else if(stats.isDirectory()){
+                    findFile(path+'/'+file, searchFile, callback);
+                }
+            });
+        });
+    });
+}
+
+findFile('./test', 'needle.txt', function(err, path){
+    if(err) throw err;
+    console.log('Found file at: ' + path);
+});
+```
+
+#### Splitted Recursive version
+
+Splitting the function into smaller functions makes it somewhat easier to understand:
+
+```
+var fs = require('fs');
+
+function findFile(path, searchFile, callback){
+    // check for a match, given a stat
+    function isMatch(err, stats){
+        if(err) return callback(err);
+        if(stats.isFile() && file == searchFile){
+            callback(undefined, path+'/'+file);
+        }else if(stats.isDirectory()){
+            statDirectory(path+'/'+file, isMatch);
+        }
+    }
+    // launch the search
+    statDirectory(path, isMatch);
+}
+
+// Read and stat a directory
+function statDirectory(path, callback){
+    fs.readdir(path, function(err, callback){
+        if(err) throw err;
+        files.forEach(function(file){
+            fs.stat(path+'/'+file, callback);
+        });
+    });
+}
+
+findFile('./test', 'needle.text', function(err, path){
+    if(err) throw err;
+    console.log('Found file at: ' + path);
+});
+```
+
+The function is split into smaller parts:
+
+-   `findFile`: This code starts the whole process, taking the main input arguments as well as the callback to call with the results.
+-   `isMatch`: This hidden helper function takes the results from `stat()` and applies the "is a match" logic necessary to implement `findFile()`.
+-   `statDirectory`: This function simply reads a path, and calls the callback for each file.
+
+#### PathIterator: Improving reuse by using an EventEmitter
+
+We can accomplish the same goal in a more reusable manner by creating our own module (`pathiterator.js`), which treats directory traversal as a stream of events by using `EventEmitter`:
+
+```
+var fs = require('fs'),
+    EventEmitter = require('events').EventEmitter,
+    util = require('util');
+
+var PathIterator = function(){};
+
+// argument with EventEmitter
+util.inherits(PathIterator, EventEmitter);
+
+// Iterate a path, emitting 'file' and 'directory' events.
+PathIterator.prototype.iterate = function(path){
+    var self = this;
+    this.statDirectory(path, function(fpath, stats){
+        if(stats.isFile()){
+            self.emit('file', fpath, stats);
+        }else if(stats.isDirectory()){
+            self.emit('directory', fpath, stats);
+            self.iterate(path+'/'+file);
+        }
+    });
+};
+
+// Read and stat a directory
+PathIterator.prototype.statDirectory = function(path, callback){
+    fs.readdir(path, function(err, files){
+        if(err) self.emit('error', err);
+        files.forEach(function(file){
+            var fpath = path+'/'+file;
+            fs.stat(fpath, function(err, stats){
+                if(err) self.emit('error', err);
+                callback(fpath, stats);
+            });
+        });
+    });
+}
+
+module.exports = PathIterator;
+```
+
+We can then use this utility class to implement the same directory traversal:
+
+```
+var PathIterator = require('./pathiterator.js');
+function findFile(path, searchFile, callback) {
+    var pi = new PathIterator();
+    pi.on('file', function(file, stats) {
+        if(file == searchFile) {
+            callback(undefined, file);
+        }
+    });
+    pi.on('error', callback);
+    pi.iterate(path);
+}
+```
+
+While this approach takes a few lines more than the pure-callback approach, the result is a somewhat nicer and extensible (for example - you could look for multiple files in the “file” callback easily).
+<br>
+
+If you end up writing a lot of code that iterates paths, having a PathIterator EventEmitter will simplify your code. The callbacks are still there - after all, this is non-blocking I/O via the event loop - but the interface becomes a lot easier to understand. You are probably running `findFile()` as part of some larger process - and instead of having all that file travelsal logic in the same module, you have a fixed interface which you can write your path traversing operations against.
