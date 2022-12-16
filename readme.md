@@ -21,3 +21,14 @@ As a Node.js developer, your job is to create the callback functions that get ex
 <br>
 
 Everything else your program might do—like waiting for data from a file or an incoming HTTP request—is handled by Node.js, in parallel, behind the scenes. Your application code will never be executed at the same time as anything else. It will always have the full attention of Node.js’s JavaScript engine while it’s running.
+
+## Single - Threaded and Highly Parallel
+
+Other systems try to gain parallelism by running lots of code at the same time, typically by spawning many threads. But not Node.js. As far as your JavaScript code is concerned, Node.js is a single-threaded environment. At most, only one line of your code will ever be executing at any time.
+<br>
+
+Node.js gets away with this by doing most I/O tasks using nonblocking
+techniques. Rather than waiting line-by-line for an operation to finish, you create a callback function that will be invoked when the operation eventually succeeds or fails.
+<br>
+
+Your code should do what it needs to do, then quickly hand control back over to the event loop so Node.js can work on something else.
