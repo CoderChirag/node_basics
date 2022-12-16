@@ -433,3 +433,45 @@
 -   Since the HTTP server and client expose Readable/Writeable streams, we can write a simple HTTP proxy simply by **pipe()ing** the two together.
 -   The **ServerRequest** is **Readable**, while the **ClientRequest** is **Writable**. Similarly, the **ClientResponse** is **Readable** while the **ServerResponse** is **Writable**.
 -   The example code is given in [http_proxy.js](./http_proxy.js).
+
+## HTTPS server and client
+
+-   The HTTPS server and client API is almost identical to the HTTP API, so pretty much everything said above applies to them.
+-   In fact, the client API is the same. and the HTTPS server only differs in that it needs a certificate file.
+    <br>
+
+-   The HTTPS server library allows you to serve files over SSL/TLS.
+-   To get started, you need to have a SSl certificate from a certificate authority or you need to generate one yourself.
+-   Here is how you can generate a self-signed certificate:
+
+    ```
+    openssl genrsa -out privatekey.pem 1024
+    openssl req -new -key privatekey.pem -out certrequest.csr
+    openssl x509 -req -in certrequest.csr -signkey privatekey.pem -out certificate.pem
+    ```
+
+    **Note** that this certificate will trigger warnings in your browser, since it ias self-signed.
+    <br>
+
+-   To start the HTTPS server, you need to read the private key and certificate.
+-   Note that `readFileSync` is used in this case, since blocking to read the certificates when the server starts is acceptable:
+
+    ```
+    // HTTPS
+    var https = require('https');
+
+    // read in the private key and certificate
+    var pk = fs.readFileSync('./privatekey.pem');
+    var pc = fs.readFileSync('./certificate.pem');
+    var opts = {key: pk, cert: pc};
+
+    // create the secure server
+    var serv = https.createServer(opts, function(req, res){
+      console.log(req);
+      res.end();
+    });
+    // listen on port 443
+    serv.listen(443, '0.0.0.0');
+    ```
+
+    **Note** that on Linux, you may need to run the server with higher priviliges to bind to port 443.
