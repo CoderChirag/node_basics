@@ -1,5 +1,24 @@
 # File system
 
+## Contents
+
+- [File system](#file-system)
+  - [Contents](#contents)
+  - [Files: reading and writing](#files-reading-and-writing)
+    - [Reading a file (fully buffered)](#reading-a-file-fully-buffered)
+    - [Writing a file (fully buffered)](#writing-a-file-fully-buffered)
+    - [Opening, writing to a file and closing it (in parts)](#opening-writing-to-a-file-and-closing-it-in-parts)
+    - [Opening, seeking to a position, reading from a file and closing it (in parts)](#opening-seeking-to-a-position-reading-from-a-file-and-closing-it-in-parts)
+  - [Directories: read, create \& delete](#directories-read-create--delete)
+    - [Reading a directory](#reading-a-directory)
+    - [Creating and deleting a directory](#creating-and-deleting-a-directory)
+  - [Using Readable and Writable streams](#using-readable-and-writable-streams)
+  - [Practical Example](#practical-example)
+    - [Example: searching for a file in a directory, traversing recursively](#example-searching-for-a-file-in-a-directory-traversing-recursively)
+      - [Naive Recursive Version](#naive-recursive-version)
+      - [Splitted Recursive version](#splitted-recursive-version)
+      - [PathIterator: Improving reuse by using an EventEmitter](#pathiterator-improving-reuse-by-using-an-eventemitter)
+
 The file system functions consist of file I/O and directory I/O functions. All of the file system functions offer both synchronous (blocking) and asynchronous (non-blocking) versions. The difference between these two is that the synchronous functions (which have “Sync” in their name) return the value directly and prevent Node from executing any code while the I/O operation is being performed:
 
 ```
