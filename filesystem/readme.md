@@ -273,59 +273,63 @@ The function is split into smaller parts:
 We can accomplish the same goal in a more reusable manner by creating our own module (`pathiterator.js`), which treats directory traversal as a stream of events by using `EventEmitter`:
 
 ```
-var fs = require('fs'),
-    EventEmitter = require('events').EventEmitter,
-    util = require('util');
+const fs = require('fs');
+const EventEmitter = require('events').EventEmitter;
 
-var PathIterator = function(){};
+class PathIterator extends EventEmitter {
+    // Iterate a path, emitting 'file' and 'directory' events.
+    iterate(path) {
+        this.statDirectory(path, (fpath, stats) => {
+            if (stats.isFile()) this.emit('file', fpath, stats);
+            else if (stats.isDirectory()) {
+                this.emit('directory', fpath, stats);
+                this.iterate(fpath);
+            }
+        });
+    }
 
-// argument with EventEmitter
-util.inherits(PathIterator, EventEmitter);
-
-// Iterate a path, emitting 'file' and 'directory' events.
-PathIterator.prototype.iterate = function(path){
-    var self = this;
-    this.statDirectory(path, function(fpath, stats){
-        if(stats.isFile()){
-            self.emit('file', fpath, stats);
-        }else if(stats.isDirectory()){
-            self.emit('directory', fpath, stats);
-            self.iterate(path+'/'+file);
-        }
-    });
-};
-
-// Read and stat a directory
-PathIterator.prototype.statDirectory = function(path, callback){
-    fs.readdir(path, function(err, files){
-        if(err) self.emit('error', err);
-        files.forEach(function(file){
-            var fpath = path+'/'+file;
-            fs.stat(fpath, function(err, stats){
-                if(err) self.emit('error', err);
-                callback(fpath, stats);
+    // Read and stat a directory
+    statDirectory(path, callback) {
+        fs.readdir(path, (err, files) => {
+            if (err) this.emit('error', err);
+            files.forEach(file => {
+                const fpath = `${path}/${file}`;
+                fs.stat(fpath, (err, stats) => {
+                    if (err) this.emit('error', err);
+                    callback(fpath, stats);
+                });
             });
         });
-    });
+    }
 }
 
 module.exports = PathIterator;
 ```
 
+As you can see, we create a new class which extends EventEmitter, and emits the following events:
+
+-   `“error” - function(error)`: emitted on errors.
+-   `“file” - function(filepath, stats)`: the full path to the file and the result from `fs.stat`.
+-   `“directory” - function(dirpath, stats)`: the full path to the directory and the result from `fs.stat`.
+
 We can then use this utility class to implement the same directory traversal:
 
 ```
-var PathIterator = require('./pathiterator.js');
-function findFile(path, searchFile, callback) {
-    var pi = new PathIterator();
-    pi.on('file', function(file, stats) {
-        if(file == searchFile) {
-            callback(undefined, file);
-        }
-    });
-    pi.on('error', callback);
-    pi.iterate(path);
+const path = require('path');
+const PathIterator = require('./pathiterator');
+
+function findFile(fpath, filename, callback) {
+	const pi = new PathIterator();
+	pi.on('file', (file, stats) => {
+		if (path.basename(file) == filename) callback(file, stats);
+	});
+	pi.iterate(fpath);
 }
+
+findFile(path.join(__dirname, '..'), 'a.txt', (file, stats) => {
+	console.log(file);
+	console.log(stats);
+});
 ```
 
 While this approach takes a few lines more than the pure-callback approach, the result is a somewhat nicer and extensible (for example - you could look for multiple files in the “file” callback easily).
