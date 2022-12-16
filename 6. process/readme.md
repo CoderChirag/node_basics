@@ -52,3 +52,18 @@ process.on('uncaughtException', (err) => {
 ```
 
 The default behavior on `uncaughtException` is to print a stack trace and exit - using the above, your program will display the message provided and the stack trace, but will **not** exit.
+
+## Process Streams
+
+The process object also provides wrappings for the three `STDIO` streams, `stdin`, `stdout`, and `stderr`. Put briefly, `stdin` is a readable stream (where one would read input from the user), `stdout` is a non-blocking writeable stream (writes to stdout are asynchronous, in other words), and `stderr` is a blocking (synchronous) writeable stream.
+<br>
+
+The simplest one to describe is `process.stdout`. Technically, most output in Node.js is accomplished by using `process.stdout.write()` - though most people would never know it. The following is from `console.js` in Node.js core:
+
+```
+exports.log = function(){
+    process.stdout.write(format.apply(this, arguments) + '\n');
+};
+```
+
+The streams are covered in detailed in [Streams](<../1.%20fundamentals%20(Timers%2C%20Streams%2C%20Buffers%20%26%20Event%20Emitters)/1.3%20streams/readme.md>)
