@@ -67,3 +67,29 @@ exports.log = function(){
 ```
 
 The streams are covered in detailed in [Streams](<../1.%20fundamentals%20(Timers%2C%20Streams%2C%20Buffers%20%26%20Event%20Emitters)/1.3%20streams/readme.md>)
+
+### Process Properties
+
+The `process` object additionally contains a variety of properties that allow you to access information about the running process. Let's run through a few quick examples with the help of the REPL:
+
+```
+> process.pid
+3290
+> process.version
+'v0.4.9'
+> process.platform
+'win32'
+> process.title
+'node'
+```
+
+The `pid` is the OS Process ID, `platform` is something general like `'linux'` or `'darwin'`, and `version` refers to your Node.js version. `process.title` is a little bit different - while set to node by default, it can be set to anything you want, and will be what gets displayed in lists of running processes.
+<br>
+
+The `process` module also exposes `process.argv`, an array containing the command-line arguments to the current process, and `process.argc`, an integer representing the number of arguments passed in.
+<br>
+
+`process.execPath` will return the absolute path of the executable that started this process.
+<br>
+
+`process.env` contains your environment variables.
