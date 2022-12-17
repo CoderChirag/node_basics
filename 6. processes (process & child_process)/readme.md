@@ -192,6 +192,8 @@ The first parameter to `spawn()` is the name of the program we wish to execute; 
 
 The object returned by `spawn()` is a ChildProcess. Its `stdin`, `stdout`, and `stderr` properties are Streams that can be used to read or write data. We want to send the standard output from the child process directly to our own standard output stream. This is what the `pipe()` method does.
 
+A modified version of this program is given in [watcher-spawn.js](./watcher-spawn.js)
+
 ## `child_process` Methods
 
 For convenience, the `node:child_process` module provides a handful of synchronous and asynchronous alternatives to `child_process.spawn()` and `child_process.spawnSync()`. Each of these alternatives are implemented on top of `child_process.spawn()` or `child_process.spawnSync()`:
