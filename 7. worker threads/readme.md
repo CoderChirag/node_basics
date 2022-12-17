@@ -87,3 +87,27 @@ Worker Thread implementation by CoderChirag
 ```
 
 The code for this is given in files [worker-threads-example.js](./worker-threads-example.js) and [worker.js](./worker.js).
+
+# Don't Block the Event Loop (or the Worker Pool)
+
+## The Worker Pool
+
+Node.js runs JavaScript code in the Event Loop (initialization and callbacks), and offers a **Worker Pool** to handle expensive tasks like file I/O. Node.js scales well, sometimes better than more heavyweight approaches like Apache. **The secret to the scalability of Node.js is that it uses a small number of threads to handle many clients.** If Node.js can make do with fewer threads, then it can spend more of your system's time and memory working on clients rather than on paying space and time overheads for threads (memory, context-switching). But because Node.js has only a few threads, you must structure your application to use them wisely.
+<br>
+
+Here's a good rule of thumb for keeping your Node.js server speedy: Node.js is fast when the work associated with each client at any given time is "small".
+<br>
+
+This applies to callbacks on the Event Loop and tasks on the Worker Pool.
+
+## Why should I avoid blocking the Event Loop and the Worker Pool?
+
+Node.js uses a small number of threads to handle many clients (by default 4 threads). In Node.js there are two types of threads:
+
+-   one **Event Loop** (aka the **main loop**, **main thread**, **event thread**, etc.),
+-   and a pool of `k` Workers in a **Worker Pool** (aka the **threadpool**).
+
+If a thread is taking a long time to execute a callback (Event Loop) or a task (Worker), we call it **"blocked"**. While a thread is blocked working on behalf of one client, it cannot handle requests from any other clients. This provides two motivations for blocking neither the Event Loop nor the Worker Pool:
+
+-   **Performance:** If you regularly perform heavyweight activity on either type of thread, the throughput (requests/second) of your server will suffer.
+-   **Security:** If it is possible that for certain input one of your threads might block, a malicious client could submit this "evil input", make your threads block, and keep them from working on other clients. This would be a **Denial of Service** attack.
