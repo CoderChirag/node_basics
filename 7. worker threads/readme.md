@@ -1,3 +1,33 @@
+# Contents
+
+- [Contents](#contents)
+- [Worker Threads](#worker-threads)
+  - [Example Implementation](#example-implementation)
+- [Don't Block the Event Loop (or the Worker Pool)](#dont-block-the-event-loop-or-the-worker-pool)
+  - [The Worker Pool](#the-worker-pool)
+  - [Why should I avoid blocking the Event Loop and the Worker Pool?](#why-should-i-avoid-blocking-the-event-loop-and-the-worker-pool)
+  - [A quick review of Node](#a-quick-review-of-node)
+    - [What code runs on the Event Loop?](#what-code-runs-on-the-event-loop)
+    - [What code runs on the Worker Pool?](#what-code-runs-on-the-worker-pool)
+    - [How does Node.js decide what code to run next?](#how-does-nodejs-decide-what-code-to-run-next)
+    - [What does this mean for application design?](#what-does-this-mean-for-application-design)
+  - [Don't block the Event Loop](#dont-block-the-event-loop)
+    - [How careful should you be?](#how-careful-should-you-be)
+    - [Complex calculations without blocking the Event Loop](#complex-calculations-without-blocking-the-event-loop)
+      - [Partitioning](#partitioning)
+      - [Offloading](#offloading)
+        - [How to offload](#how-to-offload)
+        - [Downside of offloading](#downside-of-offloading)
+        - [Some suggestions for offloading](#some-suggestions-for-offloading)
+        - [Offloading: conclusions](#offloading-conclusions)
+  - [Don't block the Worker Pool](#dont-block-the-worker-pool)
+    - [Minimizing the variation in Task times](#minimizing-the-variation-in-task-times)
+    - [Task partitioning](#task-partitioning)
+    - [Avoiding Task partitioning](#avoiding-task-partitioning)
+    - [Worker Pool: conclusions](#worker-pool-conclusions)
+  - [The risks of npm modules](#the-risks-of-npm-modules)
+  - [Conclusion](#conclusion)
+
 # Worker Threads
 
 The `node:worker_threads` module enables the use of threads that execute JavaScript in parallel. To access it:
