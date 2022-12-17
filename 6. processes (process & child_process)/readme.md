@@ -11,6 +11,7 @@
   - [Process Properties](#process-properties)
   - [Process Methods](#process-methods)
 - [Child Process](#child-process)
+  - [`child_process` Methods](#child_process-methods)
 
 The global `process` object provides information about, and control over, the current Node.js process.
 
@@ -191,3 +192,13 @@ The first parameter to `spawn()` is the name of the program we wish to execute; 
 The object returned by `spawn()` is a ChildProcess. Its `stdin`, `stdout`, and `stderr` properties are Streams that can be used to read or write data. We want to send the standard output from the child process directly to our own standard output stream. This is what the `pipe()` method does.
 
 A modified version of this program is given in [watcher-spawn.js](./watcher-spawn.js).
+
+## `child_process` Methods
+
+For convenience, the `node:child_process` module provides a handful of synchronous and asynchronous alternatives to `child_process.spawn()` and `child_process.spawnSync()`. Each of these alternatives are implemented on top of `child_process.spawn()` or `child_process.spawnSync()`:
+
+-   `child_process.exec()`: spawns a shell and runs a command within that shell, passing the `stdout` and `stderr` to a callback function when complete.
+-   `child_process.execFile()`: similar to `child_process.exec()` except that it spawns the command directly without first spawning a shell by default.
+-   `child_process.fork()`: spawns a new Node.js process and invokes a specified module with an IPC communication channel established that allows sending messages between parent and child.
+-   `child_process.execSync()`: a synchronous version of `child_process.exec()` that will block the Node.js event loop.
+-   `child_process.execFileSync()`: a synchronous version of `child_process.execFile()` that will block the Node.js event loop.
