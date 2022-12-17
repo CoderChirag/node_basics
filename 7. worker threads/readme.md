@@ -111,3 +111,59 @@ If a thread is taking a long time to execute a callback (Event Loop) or a task (
 
 -   **Performance:** If you regularly perform heavyweight activity on either type of thread, the throughput (requests/second) of your server will suffer.
 -   **Security:** If it is possible that for certain input one of your threads might block, a malicious client could submit this "evil input", make your threads block, and keep them from working on other clients. This would be a **Denial of Service** attack.
+
+## A quick review of Node
+
+Node.js uses the Event-Driven Architecture: it has an Event Loop for orchestration and a Worker Pool for expensive tasks.
+
+### What code runs on the Event Loop?
+
+When they begin, Node.js applications first complete an initialization phase, `require`'ing modules and registering callbacks for events. Node.js applications then enter the Event Loop, responding to incoming client requests by executing the appropriate callback. This callback executes synchronously, and may register asynchronous requests to continue processing after it completes. The callbacks for these asynchronous requests will also be executed on the Event Loop.
+<br>
+
+The Event Loop will also fulfill the non-blocking asynchronous requests made by its callbacks, e.g., network I/O.
+<br>
+
+In summary, **the Event Loop executes the JavaScript callbacks registered for events**, and is **also responsible for fulfilling non-blocking asynchronous requests like network I/O**.
+
+### What code runs on the Worker Pool?
+
+The Worker Pool of Node.js is implemented in libuv, which exposes a general task submission API.
+<br>
+
+**Node.js uses the Worker Pool to handle "expensive" tasks**. This includes **I/O for which an operating system does not provide a non-blocking version**, as well as particularly **CPU-intensive tasks**.
+<br>
+
+These are the Node.js module APIs that make use of this Worker Pool:
+
+1. **I/O-intensive**
+    1. **DNS:** `dns.lookup()`, `dns.lookupService()`.
+    2. **File System:** All file system APIs except `fs.FSWatcher()` and those that are explicitly synchronous use libuv's threadpool.
+2. **CPU-intensive**
+    1. **Crypto:** `crypto.pbkdf2()`, `crypto.scrypt()`, `crypto.randomBytes()`, `crypto.randomFill()`, `crypto.generateKeyPair()`.
+    2. **Zlib:** All zlib APIs except those that are explicitly synchronous use libuv's threadpool.
+
+In many Node.js applications, these APIs are the only sources of tasks for the Worker Pool. Applications and modules that use a C++ add-on can submit other tasks to the Worker Pool.
+<br>
+
+For the sake of completeness, we note that when you call one of these APIs from a callback on the Event Loop, the Event Loop pays some minor setup costs as it enters the Node.js C++ bindings for that API and submits a task to the Worker Pool. These costs are negligible compared to the overall cost of the task, which is why the Event Loop is offloading it. When submitting one of these tasks to the Worker Pool, Node.js provides a pointer to the corresponding C++ function in the Node.js C++ bindings.
+
+### How does Node.js decide what code to run next?
+
+Abstractly, the Event Loop and the Worker Pool maintain queues for pending events and pending tasks, respectively.
+<br>
+
+In truth, the Event Loop does not actually maintain a queue. Instead, it has a collection of file descriptors that it asks the operating system to monitor, using a mechanism like **epoll** (Linux), **kqueue** (OSX), **event ports** (Solaris), or **IOCP** (Windows). These file descriptors correspond to network sockets, any files it is watching, and so on. When the operating system says that one of these file descriptors is ready, the Event Loop translates it to the appropriate event and invokes the callback(s) associated with that event.
+<br>
+
+In contrast, the Worker Pool uses a real queue whose entries are tasks to be processed. A Worker pops a task from this queue and works on it, and when finished the Worker raises an **"At least one task is finished"** event for the Event Loop.
+
+### What does this mean for application design?
+
+In a one-thread-per-client system like Apache, each pending client is assigned its own thread. If a thread handling one client blocks, the operating system will interrupt it and give another client a turn. The operating system thus ensures that clients that require a small amount of work are not penalized by clients that require more work.
+<br>
+
+Because Node.js handles many clients with few threads, if a thread blocks handling one client's request, then pending client requests may not get a turn until the thread finishes its callback or task. **The fair treatment of clients is thus the responsibility of your application.** This means that you shouldn't do too much work for any client in any single callback or task.
+<br>
+
+This is part of why Node.js can scale well, but it also means that you are responsible for ensuring fair scheduling.
