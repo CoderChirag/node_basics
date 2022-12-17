@@ -167,3 +167,61 @@ Because Node.js handles many clients with few threads, if a thread blocks handli
 <br>
 
 This is part of why Node.js can scale well, but it also means that you are responsible for ensuring fair scheduling.
+
+## Don't block the Event Loop
+
+The Event Loop notices each new client connection and orchestrates the generation of a response. All incoming requests and outgoing responses pass through the Event Loop. This means that if the Event Loop spends too long at any point, all current and new clients will not get a turn.
+<br>
+
+You should make sure you never block the Event Loop. In other words, each of your JavaScript callbacks should complete quickly. This of course also applies to your `await`'s, your `Promise.then`'s, and so on.
+<br>
+
+A good way to ensure this is to reason about the **"computational complexity"** of your callbacks. If your callback takes a constant number of steps no matter what its arguments are, then you'll always give every pending client a fair turn. If your callback takes a different number of steps depending on its arguments, then you should think about how long the arguments might be.
+<br>
+
+**Example 1: A constant-time callback.**
+
+```
+app.get('/constant-time', (req, res) => {
+  res.sendStatus(200);
+});
+```
+
+**Example 2: An `O(n)` callback. This callback will run quickly for small `n` and more slowly for large `n`.**
+
+```
+app.get('/countToN', (req, res) => {
+  let n = req.query.n;
+
+  // n iterations before giving someone else a turn
+  for (let i = 0; i < n; i++) {
+    console.log(`Iter ${i}`);
+  }
+
+  res.sendStatus(200);
+});
+```
+
+**Example 3: An `O(n^2)` callback. This callback will still run quickly for small `n`, but for large `n` it will run much more slowly than the previous `O(n)` example.**
+
+```
+app.get('/countToN2', (req, res) => {
+  let n = req.query.n;
+
+  // n^2 iterations before giving someone else a turn
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      console.log(`Iter ${i}.${j}`);
+    }
+  }
+
+  res.sendStatus(200);
+});
+```
+
+### How careful should you be?
+
+Node.js uses the Google V8 engine for JavaScript, which is quite fast for many common operations. Exceptions to this rule are regexps and JSON operations, discussed below.
+<br>
+
+However, for complex tasks you should consider bounding the input and rejecting inputs that are too long. That way, even if your callback has large complexity, by bounding the input you ensure the callback cannot take more than the worst-case time on the longest acceptable input. You can then evaluate the worst-case cost of this callback and determine whether its running time is acceptable in your context.
