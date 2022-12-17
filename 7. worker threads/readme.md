@@ -225,3 +225,90 @@ Node.js uses the Google V8 engine for JavaScript, which is quite fast for many c
 <br>
 
 However, for complex tasks you should consider bounding the input and rejecting inputs that are too long. That way, even if your callback has large complexity, by bounding the input you ensure the callback cannot take more than the worst-case time on the longest acceptable input. You can then evaluate the worst-case cost of this callback and determine whether its running time is acceptable in your context.
+
+### Complex calculations without blocking the Event Loop
+
+Suppose you want to do complex calculations in JavaScript without blocking the Event Loop. You have two options: **partitioning** or **offloading**.
+
+#### Partitioning
+
+You could partition your calculations so that each runs on the Event Loop but regularly yields (gives turns to) other pending events. In JavaScript it's easy to save the state of an ongoing task in a closure, as shown in example 2 below.
+<br>
+
+For a simple example, suppose you want to compute the average of the numbers `1` to `n`.
+
+**Example 1: Un-partitioned average, costs `O(n)`**
+
+```
+for(let i=0; i<n; i++)
+    sum += i;
+let avg = sum / n;
+console.log('avg: ' + avg);
+```
+
+**Example 2: Partitioned average, each of the `n` asynchronous steps costs `O(1)`.**
+
+```
+function asyncAvg(n, avgCB){
+    var sum = 0; //Save ongoing sum in JS closure.
+    function help(i, cb){
+        sum += i;
+        if(i == n){
+            cb(sum);
+            return;
+        }
+
+        setImmediate(help.bind(null, i+1, cb)); // "Asynchronous recursion" - Schedule next operation asynchronously.
+    }
+
+    help(1, function(sum){ //Start the helper, with CB to call avgCB.
+        var avg = sum/n;
+        avgCB(avg);
+    });
+}
+
+asyncAvg(n, function(avg){
+    console.log('AVG OF 1-n: ' + avg);
+});
+```
+
+You can apply this principle to array iterations and so forth.
+
+#### Offloading
+
+If you need to do something more complex, partitioning is not a good option. This is because partitioning uses only the Event Loop, and you won't benefit from multiple cores almost certainly available on your machine. Remember, the Event Loop should orchestrate client requests, not fulfill them itself. For a complicated task, move the work off of the Event Loop onto a Worker Pool.
+
+##### How to offload
+
+You have two options for a destination Worker Pool to which to offload work.
+
+-   You can use the built-in Node.js Worker Pool by developing a **C++ addon**. On older versions of Node, build your C++ addon using **NAN**, and on newer versions use **N-API**. **node-webworker-threads** offers a JavaScript-only way to access the Node.js Worker Pool.
+-   You can create and manage your own Worker Pool dedicated to computation rather than the Node.js I/O-themed Worker Pool. The most straightforward ways to do this is using **Child Process** or **Cluster**.
+
+You should not simply create a Child Process for every client. You can receive client requests more quickly than you can create and manage children, and your server might become a **fork bomb**.
+
+##### Downside of offloading
+
+The downside of the offloading approach is that it incurs overhead in the form of communication costs. Only the Event Loop is allowed to see the "namespace" (JavaScript state) of your application. From a Worker, you cannot manipulate a JavaScript object in the Event Loop's namespace. Instead, you have to serialize and deserialize any objects you wish to share. Then the Worker can operate on its own copy of these object(s) and return the modified object (or a "patch") to the Event Loop.
+
+##### Some suggestions for offloading
+
+You may wish to distinguish between CPU-intensive and I/O-intensive tasks because they have markedly different characteristics.
+
+-   A CPU-intensive task only makes progress when its Worker is scheduled, and the Worker must be scheduled onto one of your machine's logical cores. If you have 4 logical cores and 5 Workers, one of these Workers cannot make progress. As a result, you are paying overhead (memory and scheduling costs) for this Worker and getting no return for it.
+-   I/O-intensive tasks involve querying an external service provider (DNS, file system, etc.) and waiting for its response. While a Worker with an I/O-intensive task is waiting for its response, it has nothing else to do and can be de-scheduled by the operating system, giving another Worker a chance to submit their request. Thus, I/O-intensive tasks will be making progress even while the associated thread is not running. External service providers like databases and file systems have been highly optimized to handle many pending requests concurrently. For example, a file system will examine a large set of pending write and read requests to merge conflicting updates and to retrieve files in an optimal order (e.g. see these slides).
+
+If you rely on only one Worker Pool, e.g. the Node.js Worker Pool, then the differing characteristics of CPU-bound and I/O-bound work may harm your application's performance.
+<br>
+
+For this reason, you might wish to maintain a separate Computation Worker Pool.
+
+##### Offloading: conclusions
+
+For simple tasks, like iterating over the elements of an arbitrarily long array, partitioning might be a good option. If your computation is more complex, offloading is a better approach: the communication costs, i.e. the overhead of passing serialized objects between the Event Loop and the Worker Pool, are offset by the benefit of using multiple cores.
+<br>
+
+However, if your server relies heavily on complex calculations, you should think about whether Node.js is really a good fit. Node.js excels for I/O-bound work, but for expensive computation it might not be the best option.
+<br>
+
+If you take the offloading approach, see the section on not blocking the Worker Pool (below section).
