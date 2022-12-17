@@ -1,7 +1,9 @@
 # Interview Questions and Some Important Concepts
 
 1. **How does web applications handle concurrency?**
-   Most people think that all software do this:
+   <br>
+
+    Most people think that all software do this:
 
     ```
      user do an action
@@ -97,4 +99,5 @@
     <br>
 
 2. **What is the secret to the scalability of node.js?**
-   One Thread for many clients is the secret to the scalablity of node.js.
+
+    One Thread for many clients is the secret to the scalablity of node.js.
