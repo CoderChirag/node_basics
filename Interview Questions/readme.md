@@ -100,4 +100,4 @@
 
 2. **What is the secret to the scalability of node.js?**
 
-    One Thread for many clients is the secret to the scalablity of node.js.
+    **One Thread for many clients** is the secret to the scalablity of node.js.
