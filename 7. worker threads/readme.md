@@ -375,3 +375,28 @@ Whether you use only the Node.js Worker Pool or maintain separate Worker Pool(s)
 <br>
 
 To do this, minimize the variation in Task times by using Task partitioning.
+
+## The risks of npm modules
+
+While the Node.js core modules offer building blocks for a wide variety of applications, sometimes something more is needed. Node.js developers benefit tremendously from the npm ecosystem, with hundreds of thousands of modules offering functionality to accelerate your development process.
+<br>
+
+Remember, however, that the majority of these modules are written by third-party developers and are generally released with only best-effort guarantees. A developer using an npm module should be concerned about two things, though the latter is frequently forgotten.
+
+-   Does it honor its APIs?
+-   Might its APIs block the Event Loop or a Worker? Many modules make no effort to indicate the cost of their APIs, to the detriment of the community.
+
+For simple APIs you can estimate the cost of the APIs; the cost of string manipulation isn't hard to fathom. But in many cases it's unclear how much an API might cost.
+<br>
+
+**If you are calling an API that might do something expensive, double-check the cost. Ask the developers to document it, or examine the source code yourself (and submit a PR documenting the cost).**
+<br>
+
+Remember, even if the API is asynchronous, you don't know how much time it might spend on a Worker or on the Event Loop in each of its partitions. For example, suppose in the `asyncAvg` example given above, each call to the helper function summed half of the numbers rather than one of them. Then this function would still be asynchronous, but the cost of each partition would be `O(n)`, not `O(1)`, making it much less safe to use for arbitrary values of `n`.
+
+## Conclusion
+
+Node.js has two types of threads: one Event Loop and `k` Workers. The Event Loop is responsible for JavaScript callbacks and non-blocking I/O, and a Worker executes tasks corresponding to C++ code that completes an asynchronous request, including blocking I/O and CPU-intensive work. Both types of threads work on no more than one activity at a time. If any callback or task takes a long time, the thread running it becomes _blocked_. If your application makes blocking callbacks or tasks, this can lead to degraded throughput (clients/second) at best, and complete denial of service at worst.
+<br>
+
+To write a high-throughput, more DoS-proof web server, you must ensure that on benign and on malicious input, neither your Event Loop nor your Workers will block.
