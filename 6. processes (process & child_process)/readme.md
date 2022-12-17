@@ -10,6 +10,7 @@
   - [Process Streams](#process-streams)
   - [Process Properties](#process-properties)
   - [Process Methods](#process-methods)
+- [Child Process](#child-process)
 
 The global `process` object provides information about, and control over, the current Node.js process.
 
@@ -144,3 +145,49 @@ It is much more efficient, and much more accurate.
 <br>
 
 `process.nextTick()` is covered in detailed manner in [Timers](<../1.%20fundamentals%20(Timers,%20Streams,%20Buffers%20&%20Event%20Emitters)/1.1%20timers/readme.md>)
+
+# Child Process
+
+The `node:child_process` module provides the ability to spawn subprocesses in a manner that is similar, but not identical, to `popen(3)` in linux.
+<br>
+
+The `popen()` function in linux opens a process by creating a pipe, forking, and invoking the shell.
+<br>
+
+This capability is primarily provided by the `child_process.spawn()` function:
+
+```
+const fs = require('fs');
+const spawn = require('child_process').spawn;
+const filename = process.argv[2];
+
+if(!filename){
+    throw Error('A file to watch must be specified!');
+}
+
+fs.watch(filename, () => {
+    const ls = spawn('ls', ['-l', '-h', filename]);
+    ls.stdout.pipe(process.stdout);
+});
+console.log(`Now watching ${filename} for changes...`);
+```
+
+Save the file as `watcher-spawn.js` and run it with node:
+
+```
+$ node watcher-spawn.js target.txt
+Now watching target.txt for changes...
+```
+
+If you go to a different console and touch the target file, your Node js program will produce something like this:
+
+```
+-rw-rw-r-- 1 jimbo jimbo 6 Dec 8 05:19 target.txt
+```
+
+The first parameter to `spawn()` is the name of the program we wish to execute; in our case it’s `ls`. The second parameter is an array of command-line arguments. It contains the flags and the target filename.
+<br>
+
+The object returned by `spawn()` is a ChildProcess. Its `stdin`, `stdout`, and `stderr` properties are Streams that can be used to read or write data. We want to send the standard output from the child process directly to our own standard output stream. This is what the `pipe()` method does.
+
+A modified version of this program is given in [watcher-spawn.js](./watcher-spawn.js).
