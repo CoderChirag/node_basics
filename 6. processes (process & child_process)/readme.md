@@ -12,6 +12,7 @@
   - [Process Methods](#process-methods)
 - [Child Process](#child-process)
   - [`child_process` Methods](#child_process-methods)
+  - [Spawning `.bat` and `.cmd` files on Windows](#spawning-bat-and-cmd-files-on-windows)
 
 The global `process` object provides information about, and control over, the current Node.js process.
 
@@ -191,8 +192,6 @@ The first parameter to `spawn()` is the name of the program we wish to execute; 
 
 The object returned by `spawn()` is a ChildProcess. Its `stdin`, `stdout`, and `stderr` properties are Streams that can be used to read or write data. We want to send the standard output from the child process directly to our own standard output stream. This is what the `pipe()` method does.
 
-A modified version of this program is given in [watcher-spawn.js](./watcher-spawn.js).
-
 ## `child_process` Methods
 
 For convenience, the `node:child_process` module provides a handful of synchronous and asynchronous alternatives to `child_process.spawn()` and `child_process.spawnSync()`. Each of these alternatives are implemented on top of `child_process.spawn()` or `child_process.spawnSync()`:
@@ -202,3 +201,57 @@ For convenience, the `node:child_process` module provides a handful of synchrono
 -   `child_process.fork()`: spawns a new Node.js process and invokes a specified module with an IPC communication channel established that allows sending messages between parent and child.
 -   `child_process.execSync()`: a synchronous version of `child_process.exec()` that will block the Node.js event loop.
 -   `child_process.execFileSync()`: a synchronous version of `child_process.execFile()` that will block the Node.js event loop.
+
+## Spawning `.bat` and `.cmd` files on Windows
+
+The importance of the distinction between `child_process.exec()` and `child_process.execFile()` can vary based on platform.
+<br>
+
+On Unix-type operating systems (Unix, Linux, macOS) `child_process.execFile()` can be more efficient because it does not spawn a shell by default.
+<br>
+
+On Windows, however, `.bat` and `.cmd` files are not executable on their own without a terminal, and therefore cannot be launched using `child_process.execFile()`.
+When running on Windows, `.bat` and `.cmd` files can be invoked using:
+
+-   `child_process.spawn()` with the `shell` option set,
+-   with `child_process.exec()`,
+-   or by spawning `cmd.exe` and passing the `.bat` or `.cmd` file as an argument (which is what the `shell` option and `child_process.exec()` do).
+
+In any case, if the script filename contains spaces it needs to be quoted.
+
+```
+// On Windows Only...
+const { spawn } = require('node:child_process');
+const bat = spawn('cmd.exe', ['/c', 'my.bat']);
+
+bat.stdout.on('data', (data) => {
+  console.log(data.toString());
+});
+
+bat.stderr.on('data', (data) => {
+  console.error(data.toString());
+});
+
+bat.on('exit', (code) => {
+  console.log(`Child exited with code ${code}`);
+});
+```
+
+```
+// OR...
+const { exec, spawn } = require('node:child_process');
+exec('my.bat', (err, stdout, stderr) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(stdout);
+});
+
+// Script with spaces in the filename:
+const bat = spawn('"my script.cmd"', ['a', 'b'], { shell: true });
+// or:
+exec('"my script.cmd" a b', (err, stdout, stderr) => {
+  // ...
+});
+```
