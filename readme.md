@@ -11,7 +11,7 @@ So, fasten your seatbelts, because we're about to dive headfirst into the captiv
 
 - This awesome nodejs journey would be comprising of different modules each written in a different folder.
 
-- In each module, there would be a <span>readme.md</span> which would be the journey of that module.
+- In each module, there would be a <span>**readme.md**</span> which would be the journey of that module.
 
 - With that, some modules would also be comprising of source code files depending on the journey.
 
