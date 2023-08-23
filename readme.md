@@ -9,11 +9,11 @@ So, fasten your seatbelts, because we're about to dive headfirst into the captiv
 
 ## Getting Started
 
-This awesome nodejs journey would be comprising of different modules each written in a different folder.
+- This awesome nodejs journey would be comprising of different modules each written in a different folder.
 
-In each module, there would be a <span>readme.md</span> which would be the journey of that module.
+- In each module, there would be a <span>readme.md</span> which would be the journey of that module.
 
-With that, some modules would also be comprising of source code files depending on the journey.
+- With that, some modules would also be comprising of source code files depending on the journey.
 
 **Note:** For keeping the repo as beginner freindly, and easy to use, I would be numbering the modules to give an order to read through.
 :book: But if you already have some experience with Nodejs, feel free to :mag: explore the modules in any order. :rocket:
