@@ -2,6 +2,15 @@
 
 This is a quick refresher on Javascript concepts which are required before diving into the world of nodejs :book:. It's designed to help you brush up on your Javascript skills :muscle: and get you up to speed with the concepts which are building blocks of nodejs :rocket:.
 
+<details><summary><strong>Table of contents</strong></summary>
+<ul>
+<li><a href="#first-class-functions">First-class Functions</a><ul>
+<li><a href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+</details>
+
 ## First-class Functions
 
 A programming language is said to have **First-class functions** when functions in that language are treated like any other variable. For example, in such a language, a function can be passed as an argument to other functions, can be returned by another function and can be assigned as a value to a variable.
