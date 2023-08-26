@@ -87,3 +87,6 @@ Nodejs have basically 2 cores: the **C++ core** and the **Javascript Core**
 
 Most of this JS core is just wrappers for the C++ features, also called **C++ bindings**, written for you so that you don't have to write these bindings yourselves when using these C++ features in your code.
 While the other portion of the JS core is the utility functions, things which you could have written yourself, but is made available to make your life as a nodejs developer easier 😃🌟.
+<br>
+<br>
+So that's all in this overview of Nodejs, hope you enjoyed the journey from microprocessors to the V8 and Javascript. We would be diving more deeper in Nodejs in the next modules 🌟💥. See yaa !! 👋
